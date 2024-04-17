@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package xtimer.v1;
+import "errors/errors.proto";
+
+option go_package = "server/api/x_timer/v1;v1";
+
+enum ErrorReason {
+  NOT_FOUND = 0 [(errors.code) = 404];
+  NOT_FOUND_WORD = 1;
+}
