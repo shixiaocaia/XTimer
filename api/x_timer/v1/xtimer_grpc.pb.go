@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	XTimer_SayHello_FullMethodName = "/x_timer.v1.XTimer/SayHello"
+	XTimer_SayHello_FullMethodName    = "/x_timer.v1.XTimer/SayHello"
+	XTimer_CreateTimer_FullMethodName = "/x_timer.v1.XTimer/CreateTimer"
 )
 
 // XTimerClient is the client API for XTimer service.
@@ -28,6 +29,7 @@ const (
 type XTimerClient interface {
 	// Sends a greeting
 	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error)
+	CreateTimer(ctx context.Context, in *CreateTimerRequest, opts ...grpc.CallOption) (*CreateTimerReply, error)
 }
 
 type xTimerClient struct {
@@ -47,12 +49,22 @@ func (c *xTimerClient) SayHello(ctx context.Context, in *HelloRequest, opts ...g
 	return out, nil
 }
 
+func (c *xTimerClient) CreateTimer(ctx context.Context, in *CreateTimerRequest, opts ...grpc.CallOption) (*CreateTimerReply, error) {
+	out := new(CreateTimerReply)
+	err := c.cc.Invoke(ctx, XTimer_CreateTimer_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // XTimerServer is the server API for XTimer service.
 // All implementations must embed UnimplementedXTimerServer
 // for forward compatibility
 type XTimerServer interface {
 	// Sends a greeting
 	SayHello(context.Context, *HelloRequest) (*HelloReply, error)
+	CreateTimer(context.Context, *CreateTimerRequest) (*CreateTimerReply, error)
 	mustEmbedUnimplementedXTimerServer()
 }
 
@@ -62,6 +74,9 @@ type UnimplementedXTimerServer struct {
 
 func (UnimplementedXTimerServer) SayHello(context.Context, *HelloRequest) (*HelloReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
+}
+func (UnimplementedXTimerServer) CreateTimer(context.Context, *CreateTimerRequest) (*CreateTimerReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateTimer not implemented")
 }
 func (UnimplementedXTimerServer) mustEmbedUnimplementedXTimerServer() {}
 
@@ -94,6 +109,24 @@ func _XTimer_SayHello_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _XTimer_CreateTimer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTimerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(XTimerServer).CreateTimer(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: XTimer_CreateTimer_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(XTimerServer).CreateTimer(ctx, req.(*CreateTimerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // XTimer_ServiceDesc is the grpc.ServiceDesc for XTimer service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -104,6 +137,10 @@ var XTimer_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SayHello",
 			Handler:    _XTimer_SayHello_Handler,
+		},
+		{
+			MethodName: "CreateTimer",
+			Handler:    _XTimer_CreateTimer_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

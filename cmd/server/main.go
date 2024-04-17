@@ -4,7 +4,7 @@ import (
 	"flag"
 	"os"
 
-	"server/internal/conf"
+	"Xtimer/internal/conf"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
@@ -14,6 +14,8 @@ import (
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
 
+	"Xtimer/third_party/discovery"
+	xlog "Xtimer/third_party/log"
 	_ "go.uber.org/automaxprocs"
 )
 
@@ -74,6 +76,8 @@ func main() {
 		panic(err)
 	}
 
+	InitSource(&bc)
+
 	// wire_gen initApp
 	app, cleanup, err := wireApp(bc.Server, bc.Data, logger)
 	if err != nil {
@@ -85,4 +89,18 @@ func main() {
 	if err := app.Run(); err != nil {
 		panic(err)
 	}
+}
+
+// 进行一些初始化操作
+func InitSource(c *conf.Bootstrap) {
+	l := c.GetLog()
+	// 初始化日志
+	xlog.Init(xlog.WithLogLevel(l.GetLevel()),
+		xlog.WithFileName(l.GetFilename()),
+		xlog.WithMaxSize(l.GetMaxSize()),
+		xlog.WithMaxBackups(l.GetMaxBackups()),
+		xlog.WithLogPath(l.GetLogPath()),
+		xlog.WithConsole(l.GetConsole()))
+	// // 注册服务
+	discovery.NewRegistrar(c.GetMicro().GetLb().GetAddr())
 }

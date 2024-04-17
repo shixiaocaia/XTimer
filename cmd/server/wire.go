@@ -6,11 +6,11 @@
 package main
 
 import (
-	"server/internal/biz"
-	"server/internal/conf"
-	"server/internal/data"
-	"server/internal/server"
-	"server/internal/service"
+	"Xtimer/internal/biz"
+	"Xtimer/internal/conf"
+	"Xtimer/internal/data"
+	"Xtimer/internal/server"
+	"Xtimer/internal/service"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"

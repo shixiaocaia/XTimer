@@ -7,13 +7,13 @@
 package main
 
 import (
+	"Xtimer/internal/biz"
+	"Xtimer/internal/conf"
+	"Xtimer/internal/data"
+	"Xtimer/internal/server"
+	"Xtimer/internal/service"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
-	"server/internal/biz"
-	"server/internal/conf"
-	"server/internal/data"
-	"server/internal/server"
-	"server/internal/service"
 )
 
 import (
@@ -24,17 +24,14 @@ import (
 
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
-	dataData, cleanup, err := data.NewData(confData, logger)
-	if err != nil {
-		return nil, nil, err
-	}
-	greeterRepo := data.NewGreeterRepo(dataData, logger)
-	greeterUsecase := biz.NewGreeterUsecase(greeterRepo, logger)
-	greeterService := service.NewGreeterService(greeterUsecase)
-	grpcServer := server.NewGRPCServer(confServer, greeterService, logger)
-	httpServer := server.NewHTTPServer(confServer, greeterService, logger)
+	db := data.NewDatabase(confData)
+	dataData := data.NewData(db)
+	xTimerRepo := data.NewXTimerRepo(dataData)
+	xTimerUseCase := biz.NewXTimerUseCase(confData, xTimerRepo)
+	xTimerService := service.NewXTimerService(xTimerUseCase)
+	grpcServer := server.NewGRPCServer(confServer, xTimerService, logger)
+	httpServer := server.NewHTTPServer(confServer, xTimerService, logger)
 	app := newApp(logger, grpcServer, httpServer)
 	return app, func() {
-		cleanup()
 	}, nil
 }

@@ -7,6 +7,24 @@ info:
     description: The greeting service definition.
     version: 0.0.1
 paths:
+    /createTimer:
+        post:
+            tags:
+                - XTimer
+            operationId: XTimer_CreateTimer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/x_timer.v1.CreateTimerRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/x_timer.v1.CreateTimerReply'
     /ping/{name}:
         get:
             tags:
@@ -28,11 +46,43 @@ paths:
                                 $ref: '#/components/schemas/x_timer.v1.HelloReply'
 components:
     schemas:
+        x_timer.v1.CreateTimerReply:
+            type: object
+            properties:
+                id:
+                    type: string
+        x_timer.v1.CreateTimerRequest:
+            type: object
+            properties:
+                app:
+                    type: string
+                name:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+                cron:
+                    type: string
+                notifyHttpParams:
+                    $ref: '#/components/schemas/x_timer.v1.NotifyHTTPParams'
         x_timer.v1.HelloReply:
             type: object
             properties:
                 message:
                     type: string
             description: The response message containing the greetings
+        x_timer.v1.NotifyHTTPParams:
+            type: object
+            properties:
+                url:
+                    type: string
+                method:
+                    type: string
+                headers:
+                    type: object
+                    additionalProperties:
+                        type: string
+                body:
+                    type: string
 tags:
     - name: XTimer

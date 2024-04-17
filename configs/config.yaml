@@ -7,9 +7,32 @@ server:
     timeout: 1s
 data:
   database:
-    driver: mysql
-    source: root:root@tcp(127.0.0.1:3306)/test?parseTime=True&loc=Local
+    addr: 127.0.0.1:8086
+    user: root
+    password: root@2023
+    database: bitstorm-svr-go
+    max_idle_conn : 100 # 最大空闲连接数
+    max_open_conn: 200  # 最大打开连接数
+    max_idle_time: 30   # 连接最大空闲时间
+    slow_threshold_millisecond: 100 # SQL执行超过100ms，就算慢sql
+
   redis:
     addr: 127.0.0.1:6379
-    read_timeout: 0.2s
-    write_timeout: 0.2s
+    password: root2023
+    db: 0
+    pool_size: 20
+    read_timeout: 120s
+    write_timeout: 120s
+
+micro:
+  lb:
+    addr:
+      - "127.0.0.1:20002"
+
+log:
+  level: info
+  log_path: ./log
+  max_size: 100 # 日志保留大小，以 M 为单位
+  max_backups: 3 # 保留文件个数
+  console: true # false为不打印到终端
+  filename: xtimer.log

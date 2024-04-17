@@ -14,6 +14,13 @@ service XTimer {
       get: "/ping/{name}"
     };
   }
+
+  rpc CreateTimer (CreateTimerRequest) returns (CreateTimerReply) {
+    option (google.api.http) = {
+      post: "/createTimer"
+      body: "*"
+    };
+  }
 }
 
 // The request message containing the user's name.
@@ -24,4 +31,23 @@ message HelloRequest {
 // The response message containing the greetings
 message HelloReply {
   string message = 1;
+}
+
+message NotifyHTTPParams {
+  string url = 1;
+  string method = 2;
+  map<string, string> headers = 3;
+  string body = 4;
+}
+
+message CreateTimerRequest {
+  string app = 1;
+  string name = 2;
+  int32 status  = 3;
+  string cron = 4;
+  NotifyHTTPParams notify_http_params = 5;
+}
+
+message CreateTimerReply {
+  string id = 1;
 }

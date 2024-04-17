@@ -1,9 +1,9 @@
 package server
 
 import (
-	v1 "server/api/x_timer/v1"
-	"server/internal/conf"
-	"server/internal/service"
+	v1 "Xtimer/api/x_timer/v1"
+	"Xtimer/internal/conf"
+	"Xtimer/internal/service"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
