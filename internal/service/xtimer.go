@@ -30,7 +30,7 @@ func (s *XTimerService) SayHello(ctx context.Context, in *v1.HelloRequest) (*v1.
 }
 
 func (s *XTimerService) CreateTimer(ctx context.Context, req *v1.CreateTimerRequest) (*v1.CreateTimerReply, error) {
-	param, err := json.Marshal(req.NotifyHttpParams)
+	param, err := json.Marshal(req.NotifyHTTPParam)
 	if err != nil {
 		return nil, err
 	}
@@ -45,6 +45,6 @@ func (s *XTimerService) CreateTimer(ctx context.Context, req *v1.CreateTimerRequ
 		return nil, err
 	}
 	return &v1.CreateTimerReply{
-		Id: string(timer.TimerId),
+		Id: int32(timer.TimerId),
 	}, nil
 }
