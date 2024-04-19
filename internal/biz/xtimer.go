@@ -46,3 +46,13 @@ func NewXTimerUseCase(confData *conf.Data, timerRepo XTimerRepo) *XTimerUseCase 
 func (uc *XTimerUseCase) CreateTimer(ctx context.Context, g *Timer) (*Timer, error) {
 	return uc.timerRepo.Save(ctx, g)
 }
+
+func (uc *XTimerUseCase) ActiveTimer(ctx context.Context, g *Timer) error {
+	// 1. 更新status
+	if _, err := uc.timerRepo.Update(ctx, g); err != nil {
+		return err
+	}
+
+	// 2. 生成一批任务
+	return nil
+}

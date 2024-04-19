@@ -48,3 +48,17 @@ func (s *XTimerService) CreateTimer(ctx context.Context, req *v1.CreateTimerRequ
 		Id: int32(timer.TimerId),
 	}, nil
 }
+
+func (s *XTimerService) ActiveTimer(ctx context.Context, req *v1.ActiveTimerRequest) (*v1.ActiveTimerReply, error) {
+	err := s.timerUC.ActiveTimer(ctx, &biz.Timer{
+		TimerId: int64(req.Id),
+		Status:  int(req.Status),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &v1.ActiveTimerReply{
+		Id:      req.Id,
+		Message: "Active timer success",
+	}, nil
+}

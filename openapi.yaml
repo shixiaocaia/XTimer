@@ -4,13 +4,32 @@
 openapi: 3.0.3
 info:
     title: XTimer API
-    description: The greeting service definition.
     version: 0.0.1
 paths:
+    /activeTimer:
+        post:
+            tags:
+                - XTimer
+            description: 激活 / 去激活定时器Timer
+            operationId: XTimer_ActiveTimer
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/x_timer.v1.ActiveTimerRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/x_timer.v1.ActiveTimerReply'
     /createTimer:
         post:
             tags:
                 - XTimer
+            description: 创建定时器Timer
             operationId: XTimer_CreateTimer
             requestBody:
                 content:
@@ -29,7 +48,7 @@ paths:
         get:
             tags:
                 - XTimer
-            description: Sends a greeting
+            description: ping
             operationId: XTimer_SayHello
             parameters:
                 - name: name
@@ -46,11 +65,29 @@ paths:
                                 $ref: '#/components/schemas/x_timer.v1.HelloReply'
 components:
     schemas:
+        x_timer.v1.ActiveTimerReply:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int32
+                message:
+                    type: string
+        x_timer.v1.ActiveTimerRequest:
+            type: object
+            properties:
+                id:
+                    type: integer
+                    format: int32
+                status:
+                    type: integer
+                    format: int32
         x_timer.v1.CreateTimerReply:
             type: object
             properties:
                 id:
-                    type: string
+                    type: integer
+                    format: int32
         x_timer.v1.CreateTimerRequest:
             type: object
             properties:
@@ -63,15 +100,14 @@ components:
                     format: int32
                 cron:
                     type: string
-                notifyHttpParams:
-                    $ref: '#/components/schemas/x_timer.v1.NotifyHTTPParams'
+                notifyHTTPParam:
+                    $ref: '#/components/schemas/x_timer.v1.NotifyHTTPParam'
         x_timer.v1.HelloReply:
             type: object
             properties:
                 message:
                     type: string
-            description: The response message containing the greetings
-        x_timer.v1.NotifyHTTPParams:
+        x_timer.v1.NotifyHTTPParam:
             type: object
             properties:
                 url:

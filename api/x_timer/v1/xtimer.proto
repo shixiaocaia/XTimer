@@ -6,29 +6,35 @@ import "google/api/annotations.proto";
 
 option go_package = "server/api/x_timer/v1;v1";
 
-// The greeting service definition.
 service XTimer {
-  // Sends a greeting
+  // ping
   rpc SayHello (HelloRequest) returns (HelloReply) {
     option (google.api.http) = {
       get: "/ping/{name}"
     };
   }
 
+  // 创建定时器Timer
   rpc CreateTimer (CreateTimerRequest) returns (CreateTimerReply) {
     option (google.api.http) = {
       post: "/createTimer"
       body: "*"
     };
   }
+
+  // 激活 / 去激活定时器Timer
+  rpc ActiveTimer (ActiveTimerRequest) returns (ActiveTimerReply) {
+    option (google.api.http) = {
+      post: "/activeTimer"
+      body: "*"
+    };
+  }
 }
 
-// The request message containing the user's name.
 message HelloRequest {
   string name = 1;
 }
 
-// The response message containing the greetings
 message HelloReply {
   string message = 1;
 }
@@ -50,4 +56,14 @@ message CreateTimerRequest {
 
 message CreateTimerReply {
   int32 id = 1;
+}
+
+message ActiveTimerRequest {
+  int32 id = 1;
+  int32 status = 2;
+}
+
+message ActiveTimerReply {
+  int32 id = 1;
+  string message = 2;
 }
