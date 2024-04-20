@@ -33,7 +33,7 @@ func (p *Timer) TableName() string {
 	return "xtimer"
 }
 
-type XTimerRepo interface {
+type TimerRepo interface {
 	Save(context.Context, *Timer) (*Timer, error)
 	Update(context.Context, *Timer) (*Timer, error)
 	FindByID(context.Context, int64) (*Timer, error)
@@ -43,15 +43,20 @@ type XTimerRepo interface {
 
 type XTimerUseCase struct {
 	confData  *conf.Data
-	timerRepo XTimerRepo
+	timerRepo TimerRepo
+	taskRepo  TimerTaskRepo
 	tm        Transaction
+
+	muc *MigratorUseCase
 }
 
-func NewXTimerUseCase(confData *conf.Data, timerRepo XTimerRepo, tm Transaction) *XTimerUseCase {
+func NewXTimerUseCase(confData *conf.Data, timerRepo TimerRepo, tm Transaction, taskRepo TimerTaskRepo, muc *MigratorUseCase) *XTimerUseCase {
 	return &XTimerUseCase{
 		confData:  confData,
 		timerRepo: timerRepo,
 		tm:        tm,
+		taskRepo:  taskRepo,
+		muc:       muc,
 	}
 }
 
@@ -100,9 +105,11 @@ func (uc *XTimerUseCase) ActiveTimer(ctx context.Context, app string, timerId in
 
 		// 4. 如果是激活状态, 生成一批任务
 		if timer.Status == constant.Enabled.ToInt() {
-
+			if err := uc.muc.MigratorTimer(ctx, timer); err != nil {
+				log.ErrorContextf(ctx, "ActiveTimer failed: MigratorTimer failed, timerId: %v, err: %v", timerId, err)
+				return err
+			}
 		}
-
 		return nil
 	})
 

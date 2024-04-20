@@ -6,7 +6,7 @@ import (
 )
 
 // ProviderSet is biz providers.
-var ProviderSet = wire.NewSet(NewXTimerUseCase)
+var ProviderSet = wire.NewSet(NewXTimerUseCase, NewMigratorUseCase)
 
 // 解耦biz与data层，biz层只调用接口的方法
 type Transaction interface {

@@ -10,7 +10,7 @@ type xTimerRepo struct {
 	data *Data
 }
 
-func NewXTimerRepo(data *Data) biz.XTimerRepo {
+func NewTimerRepo(data *Data) biz.TimerRepo {
 	return &xTimerRepo{
 		data: data,
 	}

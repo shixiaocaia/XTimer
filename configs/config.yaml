@@ -23,6 +23,9 @@ data:
     pool_size: 20
     read_timeout: 120s
     write_timeout: 120s
+  migrator:
+    workersNum: 1000 #单节点并行协程数
+    migrateStepMinutes: 30 #每次迁移数据的时间范围step，单位：min
 
 micro:
   lb:
