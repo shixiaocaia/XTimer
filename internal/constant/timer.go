@@ -22,3 +22,7 @@ const (
 func (t TaskStatus) ToInt() int {
 	return int(t)
 }
+
+const (
+	MinuteFormat = "2006-01-02 15:04"
+)

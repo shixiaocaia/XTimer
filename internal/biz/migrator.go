@@ -11,16 +11,18 @@ import (
 )
 
 type MigratorUseCase struct {
-	confData  *conf.Data
-	timerRepo TimerRepo
-	taskRepo  TimerTaskRepo
+	confData      *conf.Data
+	timerRepo     TimerRepo
+	taskRepo      TimerTaskRepo
+	taskCacheRepo TaskCacheRepo
 }
 
-func NewMigratorUseCase(confData *conf.Data, timerRepo TimerRepo, taskRepo TimerTaskRepo) *MigratorUseCase {
+func NewMigratorUseCase(confData *conf.Data, timerRepo TimerRepo, taskRepo TimerTaskRepo, taskCache TaskCacheRepo) *MigratorUseCase {
 	return &MigratorUseCase{
-		confData:  confData,
-		timerRepo: timerRepo,
-		taskRepo:  taskRepo,
+		confData:      confData,
+		timerRepo:     timerRepo,
+		taskRepo:      taskRepo,
+		taskCacheRepo: taskCache,
 	}
 }
 
@@ -63,6 +65,11 @@ func (uc *MigratorUseCase) MigratorTimer(ctx context.Context, timer *Timer) erro
 		return err
 	}
 	// 4. 插入Redis
+	if err := uc.taskCacheRepo.BatchCreateTasks(ctx, tasks); err != nil {
+		log.ErrorContextf(ctx, "Redis存储tasks失败: %v", err)
+		return err
+	}
+
 	return nil
 }
 

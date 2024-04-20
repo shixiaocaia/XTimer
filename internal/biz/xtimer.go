@@ -42,21 +42,23 @@ type TimerRepo interface {
 }
 
 type XTimerUseCase struct {
-	confData  *conf.Data
-	timerRepo TimerRepo
-	taskRepo  TimerTaskRepo
-	tm        Transaction
+	confData      *conf.Data
+	timerRepo     TimerRepo
+	taskRepo      TimerTaskRepo
+	taskCacheRepo TaskCacheRepo
+	tm            Transaction
 
 	muc *MigratorUseCase
 }
 
-func NewXTimerUseCase(confData *conf.Data, timerRepo TimerRepo, tm Transaction, taskRepo TimerTaskRepo, muc *MigratorUseCase) *XTimerUseCase {
+func NewXTimerUseCase(confData *conf.Data, timerRepo TimerRepo, tm Transaction, taskRepo TimerTaskRepo, muc *MigratorUseCase, taskCache TaskCacheRepo) *XTimerUseCase {
 	return &XTimerUseCase{
-		confData:  confData,
-		timerRepo: timerRepo,
-		tm:        tm,
-		taskRepo:  taskRepo,
-		muc:       muc,
+		confData:      confData,
+		timerRepo:     timerRepo,
+		tm:            tm,
+		taskRepo:      taskRepo,
+		taskCacheRepo: taskCache,
+		muc:           muc,
 	}
 }
 

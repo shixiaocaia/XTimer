@@ -23,7 +23,7 @@ type TimerTaskRepo interface {
 	GetTasksByTimerIdAndRunTimer(context.Context, int64, int64) (*TimerTask, error)
 }
 
-type TaskCache interface {
+type TaskCacheRepo interface {
 	BatchCreateTasks(ctx context.Context, tasks []*TimerTask) error
 	GetTasksByTime(ctx context.Context, table string, start, end int64) ([]*TimerTask, error)
 }

@@ -11,7 +11,7 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewTimerRepo, NewDatabase, NewTransaction, NewCache, NewTimerTaskRepo)
+var ProviderSet = wire.NewSet(NewData, NewTimerRepo, NewDatabase, NewTransaction, NewCache, NewTimerTaskRepo, NewTaskCacheRepo)
 
 type contextTxKey struct{}
 

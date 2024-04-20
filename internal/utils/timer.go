@@ -2,6 +2,8 @@ package utils
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorhill/cronexpr"
@@ -9,6 +11,21 @@ import (
 
 func GetEnableLockKey(app string) string {
 	return fmt.Sprintf("enable_timer_lock_%s", app)
+}
+
+func UnionTimerIDUnix(timeID uint, unix int64) string {
+	return fmt.Sprintf("%d_%d", timeID, unix)
+}
+
+func SplitTimerIDUnix(str string) (int64, int64, error) {
+	timerIDUnix := strings.Split(str, "_")
+	if len(timerIDUnix) != 2 {
+		return 0, 0, fmt.Errorf("invalid timerID unix str: %s", str)
+	}
+
+	timerID, _ := strconv.ParseInt(timerIDUnix[0], 10, 64)
+	unix, _ := strconv.ParseInt(timerIDUnix[1], 10, 64)
+	return timerID, unix, nil
 }
 
 func GetTimeBatch(cron string, end time.Time) ([]time.Time, error) {
