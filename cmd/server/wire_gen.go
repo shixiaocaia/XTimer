@@ -25,9 +25,11 @@ import (
 // wireApp init kratos application.
 func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*kratos.App, func(), error) {
 	db := data.NewDatabase(confData)
-	dataData := data.NewData(db)
+	client := data.NewCache(confData)
+	dataData := data.NewData(db, client)
 	xTimerRepo := data.NewXTimerRepo(dataData)
-	xTimerUseCase := biz.NewXTimerUseCase(confData, xTimerRepo)
+	transaction := data.NewTransaction(dataData)
+	xTimerUseCase := biz.NewXTimerUseCase(confData, xTimerRepo, transaction)
 	xTimerService := service.NewXTimerService(xTimerUseCase)
 	grpcServer := server.NewGRPCServer(confServer, xTimerService, logger)
 	httpServer := server.NewHTTPServer(confServer, xTimerService, logger)

@@ -2,8 +2,18 @@ package biz
 
 import (
 	"Xtimer/internal/conf"
+	"Xtimer/internal/constant"
+	"Xtimer/internal/utils"
+	"Xtimer/third_party/lock"
+	"Xtimer/third_party/log"
 	"context"
+	"github.com/pkg/errors"
+	context2 "golang.org/x/net/context"
 	"time"
+)
+
+const (
+	defaultEnableGapSeconds = 3
 )
 
 // 表定义也需要放在biz层, 还是为了解耦biz与data层
@@ -34,12 +44,14 @@ type XTimerRepo interface {
 type XTimerUseCase struct {
 	confData  *conf.Data
 	timerRepo XTimerRepo
+	tm        Transaction
 }
 
-func NewXTimerUseCase(confData *conf.Data, timerRepo XTimerRepo) *XTimerUseCase {
+func NewXTimerUseCase(confData *conf.Data, timerRepo XTimerRepo, tm Transaction) *XTimerUseCase {
 	return &XTimerUseCase{
 		confData:  confData,
 		timerRepo: timerRepo,
+		tm:        tm,
 	}
 }
 
@@ -47,12 +59,52 @@ func (uc *XTimerUseCase) CreateTimer(ctx context.Context, g *Timer) (*Timer, err
 	return uc.timerRepo.Save(ctx, g)
 }
 
-func (uc *XTimerUseCase) ActiveTimer(ctx context.Context, g *Timer) error {
-	// 1. 更新status
-	if _, err := uc.timerRepo.Update(ctx, g); err != nil {
-		return err
+func (uc *XTimerUseCase) ActiveTimer(ctx context.Context, app string, timerId int64, status int32) error {
+	// 限制激活和去激活频次
+	locker := lock.NewRedisLock(utils.GetEnableLockKey(app),
+		lock.WithExpireSeconds(defaultEnableGapSeconds),
+		lock.WithWatchDogMode())
+	defer func(locker *lock.RedisLock, ctx context2.Context) {
+		err := locker.Unlock(ctx)
+		if err != nil {
+			log.ErrorContextf(ctx, "EnableTimer 自动解锁失败", err.Error())
+		}
+	}(locker, ctx)
+	err := locker.Lock(ctx)
+	// 抢锁失败, 直接跳过执行, 下一轮
+	if err != nil {
+		log.InfoContextf(ctx, "激活/去激活操作过于频繁，请稍后再试！", err.Error())
+		return errors.New("激活/去激活操作过于频繁，请稍后再试！")
 	}
 
-	// 2. 生成一批任务
+	uc.tm.InTx(ctx, func(ctx context.Context) error {
+		// 1. 数据库获取Timer
+		timer, err := uc.timerRepo.FindByID(ctx, timerId)
+		if err != nil {
+			log.ErrorContextf(ctx, "ActiveTimer failed:, timer not found, err: %v", err.Error())
+			return err
+		}
+
+		// 2. 校验状态
+		if timer.Status == int(status) {
+			log.InfoContextf(ctx, "ActiveTimer failed: status is the same, timerId: %v, status: %v", timerId, status)
+			return nil
+		}
+
+		// 3. 更新status
+		timer.Status = int(status)
+		if _, err := uc.timerRepo.Update(ctx, timer); err != nil {
+			log.ErrorContextf(ctx, "ActiveTimer failed: update status failed, timerId: %v, status: %v, err: %v", timerId, status, err)
+			return err
+		}
+
+		// 4. 如果是激活状态, 生成一批任务
+		if timer.Status == constant.Enabled.ToInt() {
+
+		}
+
+		return nil
+	})
+
 	return nil
 }

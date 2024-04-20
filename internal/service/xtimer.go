@@ -50,10 +50,7 @@ func (s *XTimerService) CreateTimer(ctx context.Context, req *v1.CreateTimerRequ
 }
 
 func (s *XTimerService) ActiveTimer(ctx context.Context, req *v1.ActiveTimerRequest) (*v1.ActiveTimerReply, error) {
-	err := s.timerUC.ActiveTimer(ctx, &biz.Timer{
-		TimerId: int64(req.Id),
-		Status:  int(req.Status),
-	})
+	err := s.timerUC.ActiveTimer(ctx, req.App, req.Id, req.Status)
 	if err != nil {
 		return nil, err
 	}

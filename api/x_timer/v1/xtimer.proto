@@ -59,11 +59,12 @@ message CreateTimerReply {
 }
 
 message ActiveTimerRequest {
-  int32 id = 1;
-  int32 status = 2;
+  string app = 1;
+  int64 id = 2;
+  int32 status = 3;
 }
 
 message ActiveTimerReply {
-  int32 id = 1;
+  int64 id = 1;
   string message = 2;
 }

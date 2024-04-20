@@ -1,7 +1,9 @@
 package data
 
 import (
+	"Xtimer/internal/biz"
 	"Xtimer/internal/conf"
+	"Xtimer/third_party/cache"
 	"Xtimer/third_party/gormcli"
 	"context"
 	"github.com/google/wire"
@@ -9,18 +11,19 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewXTimerRepo, NewDatabase)
+var ProviderSet = wire.NewSet(NewData, NewXTimerRepo, NewDatabase, NewTransaction, NewCache)
 
 type contextTxKey struct{}
 
 // Data .
 type Data struct {
-	db *gorm.DB
+	db    *gorm.DB
+	cache *cache.Client
 }
 
 // NewData .
-func NewData(db *gorm.DB) *Data {
-	dt := &Data{db: db}
+func NewData(db *gorm.DB, cache *cache.Client) *Data {
+	dt := &Data{db: db, cache: cache}
 	return dt
 }
 
@@ -46,4 +49,27 @@ func (d *Data) DB(ctx context.Context) *gorm.DB {
 		return tx
 	}
 	return d.db
+}
+
+func (d *Data) InTx(ctx context.Context, fn func(ctx context.Context) error) error {
+	return d.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		ctx = context.WithValue(ctx, contextTxKey{}, tx)
+		return fn(ctx)
+	})
+}
+
+func NewTransaction(d *Data) biz.Transaction {
+	return d
+}
+
+func NewCache(conf *conf.Data) *cache.Client {
+	dt := conf.GetRedis()
+	cache.Init(
+		cache.WithAddr(dt.GetAddr()),
+		cache.WithPassWord(dt.GetPassword()),
+		cache.WithDB(int(dt.GetDb())),
+		cache.WithPoolSize(int(dt.GetPoolSize())))
+
+	// log
+	return cache.GetRedisCli()
 }

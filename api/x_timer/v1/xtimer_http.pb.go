@@ -19,12 +19,16 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationXTimerActiveTimer = "/x_timer.v1.XTimer/ActiveTimer"
 const OperationXTimerCreateTimer = "/x_timer.v1.XTimer/CreateTimer"
 const OperationXTimerSayHello = "/x_timer.v1.XTimer/SayHello"
 
 type XTimerHTTPServer interface {
+	// ActiveTimer 激活 / 去激活定时器Timer
+	ActiveTimer(context.Context, *ActiveTimerRequest) (*ActiveTimerReply, error)
+	// CreateTimer 创建定时器Timer
 	CreateTimer(context.Context, *CreateTimerRequest) (*CreateTimerReply, error)
-	// SayHello Sends a greeting
+	// SayHello ping
 	SayHello(context.Context, *HelloRequest) (*HelloReply, error)
 }
 
@@ -32,6 +36,7 @@ func RegisterXTimerHTTPServer(s *http.Server, srv XTimerHTTPServer) {
 	r := s.Route("/")
 	r.GET("/ping/{name}", _XTimer_SayHello0_HTTP_Handler(srv))
 	r.POST("/createTimer", _XTimer_CreateTimer0_HTTP_Handler(srv))
+	r.POST("/activeTimer", _XTimer_ActiveTimer0_HTTP_Handler(srv))
 }
 
 func _XTimer_SayHello0_HTTP_Handler(srv XTimerHTTPServer) func(ctx http.Context) error {
@@ -78,7 +83,30 @@ func _XTimer_CreateTimer0_HTTP_Handler(srv XTimerHTTPServer) func(ctx http.Conte
 	}
 }
 
+func _XTimer_ActiveTimer0_HTTP_Handler(srv XTimerHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ActiveTimerRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationXTimerActiveTimer)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ActiveTimer(ctx, req.(*ActiveTimerRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ActiveTimerReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type XTimerHTTPClient interface {
+	ActiveTimer(ctx context.Context, req *ActiveTimerRequest, opts ...http.CallOption) (rsp *ActiveTimerReply, err error)
 	CreateTimer(ctx context.Context, req *CreateTimerRequest, opts ...http.CallOption) (rsp *CreateTimerReply, err error)
 	SayHello(ctx context.Context, req *HelloRequest, opts ...http.CallOption) (rsp *HelloReply, err error)
 }
@@ -89,6 +117,19 @@ type XTimerHTTPClientImpl struct {
 
 func NewXTimerHTTPClient(client *http.Client) XTimerHTTPClient {
 	return &XTimerHTTPClientImpl{client}
+}
+
+func (c *XTimerHTTPClientImpl) ActiveTimer(ctx context.Context, in *ActiveTimerRequest, opts ...http.CallOption) (*ActiveTimerReply, error) {
+	var out ActiveTimerReply
+	pattern := "/activeTimer"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationXTimerActiveTimer))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 func (c *XTimerHTTPClientImpl) CreateTimer(ctx context.Context, in *CreateTimerRequest, opts ...http.CallOption) (*CreateTimerReply, error) {
