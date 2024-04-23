@@ -12,6 +12,7 @@ import (
 	"Xtimer/internal/data"
 	"Xtimer/internal/server"
 	"Xtimer/internal/service"
+	"Xtimer/internal/task"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -33,10 +34,12 @@ func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger) (*
 	taskCacheRepo := data.NewTaskCacheRepo(confData, dataData)
 	migratorUseCase := biz.NewMigratorUseCase(confData, timerRepo, timerTaskRepo, taskCacheRepo)
 	xTimerUseCase := biz.NewXTimerUseCase(confData, timerRepo, transaction, timerTaskRepo, migratorUseCase, taskCacheRepo)
-	xTimerService := service.NewXTimerService(xTimerUseCase)
+	schedulerUseCase := biz.NewSchedulerUseCase(confData, timerRepo, timerTaskRepo, taskCacheRepo, transaction)
+	xTimerService := service.NewXTimerService(xTimerUseCase, schedulerUseCase, migratorUseCase)
 	grpcServer := server.NewGRPCServer(confServer, xTimerService, logger)
 	httpServer := server.NewHTTPServer(confServer, xTimerService, logger)
-	app := newApp(logger, grpcServer, httpServer)
+	taskServer := task.NewTaskServer(confServer, xTimerService)
+	app := newApp(logger, grpcServer, httpServer, taskServer)
 	return app, func() {
 	}, nil
 }

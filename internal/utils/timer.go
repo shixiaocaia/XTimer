@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"Xtimer/internal/constant"
 	"fmt"
 	"strconv"
 	"strings"
@@ -15,6 +16,10 @@ func GetEnableLockKey(app string) string {
 
 func UnionTimerIDUnix(timeID uint, unix int64) string {
 	return fmt.Sprintf("%d_%d", timeID, unix)
+}
+
+func GetTimeBucketLockKey(t time.Time, bucketID int) string {
+	return fmt.Sprintf("time_bucket_lock_%s_%d", t.Format(constant.MinuteFormat), bucketID)
 }
 
 func SplitTimerIDUnix(str string) (int64, int64, error) {

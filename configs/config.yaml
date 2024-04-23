@@ -5,6 +5,13 @@ server:
   grpc:
     addr: 0.0.0.0:9000
     timeout: 1000000s
+  task:
+    tasks:
+      - name: "定时运行scheduler"
+        type: "once"
+      - name: "定时触发migrator"
+        type: "cron"
+        schedule: "@every 30m"
 data:
   database:
     addr: 127.0.0.1:8086
@@ -23,6 +30,14 @@ data:
     pool_size: 20
     read_timeout: 120s
     write_timeout: 120s
+
+  scheduler:
+    workersNum: 100
+    bucketsNum: 5
+    tryLockSeconds: 70
+    tryLockGapMilliSeconds: 1000
+    successExpireSeconds: 130
+    
   migrator:
     workersNum: 1000 #单节点并行协程数
     migrateStepMinutes: 30 #每次迁移数据的时间范围step，单位：min

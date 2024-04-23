@@ -23,8 +23,12 @@ message Server {
     string addr = 2;
     google.protobuf.Duration timeout = 3;
   }
+  message TASK {
+    repeated Task tasks = 1;
+  }
   HTTP http = 1;
   GRPC grpc = 2;
+  TASK task = 3;
 }
 
 message Data {
@@ -47,6 +51,7 @@ message Data {
   Database database = 1;
   Redis redis = 2;
   Migrator migrator = 3;
+  Scheduler scheduler = 4;
 }
 
 message Log {
@@ -71,4 +76,18 @@ message Micro {
 message Migrator {
   int64 workersNum = 1;
   int64 migrateStepMinutes = 2;
+}
+
+message Scheduler {
+  int64 workersNum = 1;
+  int64 bucketsNum = 2;
+  int64 tryLockSeconds = 3;
+  int64 tryLockGapMilliSeconds = 4;
+  int64 successExpireSeconds = 5;
+}
+
+message Task {
+  string name = 1;
+  string type = 2;
+  string schedule = 3;
 }

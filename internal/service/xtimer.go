@@ -11,11 +11,17 @@ import (
 type XTimerService struct {
 	v1.UnimplementedXTimerServer
 
-	timerUC *biz.XTimerUseCase
+	timerUC     *biz.XTimerUseCase
+	schedulerUC *biz.SchedulerUseCase
+	migratorUC  *biz.MigratorUseCase
 }
 
-func NewXTimerService(uc *biz.XTimerUseCase) *XTimerService {
-	return &XTimerService{timerUC: uc}
+func NewXTimerService(uc *biz.XTimerUseCase, schedulerUC *biz.SchedulerUseCase, migratorUC *biz.MigratorUseCase) *XTimerService {
+	return &XTimerService{
+		timerUC:     uc,
+		schedulerUC: schedulerUC,
+		migratorUC:  migratorUC,
+	}
 }
 
 // SayHello implements x_timer.GreeterServer.

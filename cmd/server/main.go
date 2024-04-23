@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Xtimer/internal/task"
 	"flag"
 	"os"
 
@@ -35,7 +36,8 @@ func init() {
 	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
 }
 
-func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
+func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server, ts *task.TaskServer) *kratos.App {
+	// reg := discovery.GetRegistrar()
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
@@ -45,7 +47,9 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 		kratos.Server(
 			gs,
 			hs,
+			ts,
 		),
+		// kratos.Registrar(reg.Reg),
 	)
 }
 
@@ -89,6 +93,7 @@ func main() {
 	if err := app.Run(); err != nil {
 		panic(err)
 	}
+
 }
 
 // 进行一些初始化操作
