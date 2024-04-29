@@ -16,9 +16,11 @@ type SchedulerUseCase struct {
 	taskCache TaskCacheRepo
 	tm        Transaction
 	pool      WorkerPool
+
+	trigger *TriggerUseCase
 }
 
-func NewSchedulerUseCase(confData *conf.Data, timerRepo TimerRepo, taskRepo TimerTaskRepo, taskCache TaskCacheRepo, tm Transaction) *SchedulerUseCase {
+func NewSchedulerUseCase(confData *conf.Data, timerRepo TimerRepo, taskRepo TimerTaskRepo, taskCache TaskCacheRepo, tm Transaction, trigger *TriggerUseCase) *SchedulerUseCase {
 	return &SchedulerUseCase{
 		confData:  confData,
 		timerRepo: timerRepo,
@@ -26,6 +28,7 @@ func NewSchedulerUseCase(confData *conf.Data, timerRepo TimerRepo, taskRepo Time
 		taskCache: taskCache,
 		pool:      NewGoWorkerPool(int(confData.Scheduler.WorkersNum)),
 		tm:        tm,
+		trigger:   trigger,
 	}
 }
 
@@ -61,7 +64,8 @@ func (w *SchedulerUseCase) handleSlice(ctx context.Context, bucketID int) {
 		}
 	}()
 
-	log.InfoContextf(ctx, "scheduler_%v start: %v", bucketID, time.Now())
+	//log.InfoContextf(ctx, "scheduler_%v start: %v", bucketID, time.Now())
+
 	now := time.Now()
 	// 如果能获取到上一分钟的锁，说明上一分钟任务没有全部处理完成，没有延时锁
 	// 重新执行上一分钟任务
@@ -75,7 +79,8 @@ func (w *SchedulerUseCase) handleSlice(ctx context.Context, bucketID int) {
 	}); err != nil {
 		log.ErrorContextf(ctx, "[handle slice] submit task failed, err: %v", err)
 	}
-	log.InfoContextf(ctx, "scheduler_%v end: %v", bucketID, time.Now())
+
+	//log.InfoContextf(ctx, "scheduler_%v end: %v", bucketID, time.Now())
 }
 
 func (w *SchedulerUseCase) asyncHandleSlice(ctx context.Context, t time.Time, bucketID int) {
@@ -91,5 +96,17 @@ func (w *SchedulerUseCase) asyncHandleSlice(ctx context.Context, t time.Time, bu
 	// 保证每个分钟时间桶，只有一个协程处理
 	log.InfoContextf(ctx, "get scheduler lock success, key: %s", utils.GetTimeBucketLockKey(t, bucketID))
 
-	// TODO: 通过协程调用触发器处理任务桶
+	// 成功后延锁，避免下一个时钟分片获取到重复执行
+	ack := func() {
+		if err := locker.DelayExpire(ctx, w.confData.Scheduler.SuccessExpireSeconds); err != nil {
+			log.ErrorContextf(ctx, "expire lock failed, lock key: %s, err: %v", utils.GetTimeBucketLockKey(t, bucketID), err)
+		} else {
+			log.DebugContextf(ctx, "expire lock success, lock key: %s", utils.GetTimeBucketLockKey(t, bucketID))
+		}
+	}
+
+	if err := w.trigger.Work(ctx, utils.GetSliceMsgKey(t, bucketID), ack); err != nil {
+		log.ErrorContextf(ctx, "trigger work failed, SliceMsgKey[%v] err: %v", utils.GetSliceMsgKey(t, bucketID), err)
+	}
+
 }

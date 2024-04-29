@@ -22,6 +22,16 @@ func GetTimeBucketLockKey(t time.Time, bucketID int) string {
 	return fmt.Sprintf("time_bucket_lock_%s_%d", t.Format(constant.MinuteFormat), bucketID)
 }
 
+func GetStartMinute(str string) (time.Time, error) {
+	// 2024-04-15 13:38_2
+	timeBucket := strings.Split(str, "_")
+	if len(timeBucket) != 2 {
+		return time.Time{}, fmt.Errorf("invalid format of msg key: %s", str)
+	}
+
+	return time.ParseInLocation(constant.MinuteFormat, timeBucket[0], time.Local)
+}
+
 func SplitTimerIDUnix(str string) (int64, int64, error) {
 	timerIDUnix := strings.Split(str, "_")
 	if len(timerIDUnix) != 2 {
@@ -31,6 +41,10 @@ func SplitTimerIDUnix(str string) (int64, int64, error) {
 	timerID, _ := strconv.ParseInt(timerIDUnix[0], 10, 64)
 	unix, _ := strconv.ParseInt(timerIDUnix[1], 10, 64)
 	return timerID, unix, nil
+}
+
+func GetSliceMsgKey(t time.Time, bucketID int) string {
+	return fmt.Sprintf("%s_%d", t.Format(constant.MinuteFormat), bucketID)
 }
 
 func GetTimeBatch(cron string, end time.Time) ([]time.Time, error) {

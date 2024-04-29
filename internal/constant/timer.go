@@ -14,9 +14,8 @@ const (
 
 const (
 	TaskStatusNotRun  TaskStatus = 0
-	TaskStatusRunning TaskStatus = 1
-	TaskStatusSuccess TaskStatus = 2
-	TaskStatusFail    TaskStatus = 3
+	TaskStatusSuccess TaskStatus = 1
+	TaskStatusFail    TaskStatus = 2
 )
 
 func (t TaskStatus) ToInt() int {

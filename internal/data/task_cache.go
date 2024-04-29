@@ -69,6 +69,6 @@ func (t *TaskCacheRepo) GetTasksByTime(ctx context.Context, table string, start,
 }
 
 func (t *TaskCacheRepo) GetTableName(task *biz.TimerTask) string {
-	maxBucket := 8
+	maxBucket := t.confData.Scheduler.BucketsNum
 	return fmt.Sprintf("%s_%d", time.UnixMilli(task.RunTimer).Format(constant.MinuteFormat), int64(task.TimerID)%int64(maxBucket))
 }

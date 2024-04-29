@@ -37,6 +37,10 @@ data:
     tryLockSeconds: 70
     tryLockGapMilliSeconds: 1000
     successExpireSeconds: 130
+
+  trigger:
+    zrangeGapSeconds: 1
+    workersNum: 10000
     
   migrator:
     workersNum: 1000 #单节点并行协程数

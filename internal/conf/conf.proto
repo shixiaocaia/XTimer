@@ -52,6 +52,7 @@ message Data {
   Redis redis = 2;
   Migrator migrator = 3;
   Scheduler scheduler = 4;
+  Trigger trigger = 5;
 }
 
 message Log {
@@ -86,8 +87,14 @@ message Scheduler {
   int64 successExpireSeconds = 5;
 }
 
+message Trigger {
+  int64 zrangeGapSeconds = 1;
+  int64 workersNum = 2;
+}
+
 message Task {
   string name = 1;
   string type = 2;
   string schedule = 3;
 }
+
