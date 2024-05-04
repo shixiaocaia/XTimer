@@ -33,9 +33,10 @@ func (uc *MigratorUseCase) BatchMigratorTimer(ctx context.Context) error {
 		return err
 	}
 	for _, timer := range timers {
+		// todo 加锁，分布式情况下避免重复任务生成
 		err = uc.MigratorTimer(ctx, timer)
 		if err != nil {
-			log.ErrorContextf(ctx, "批量迁移，迁移单个Timer失败，timerId:%s", timer.TimerId)
+			log.ErrorContextf(ctx, "批量迁移, 迁移单个Timer失败, timerId:%v, err:%v", timer.TimerId, err)
 		}
 		time.Sleep(5 * time.Second)
 	}
@@ -57,6 +58,9 @@ func (uc *MigratorUseCase) MigratorTimer(ctx context.Context, timer *Timer) erro
 		log.ErrorContextf(ctx, "get executeTimes failed, err: %v", err)
 		return err
 	}
+	//if len(executeTimes) == 0 {
+	//	return nil
+	//}
 
 	// 3. 创建任务, 插入MySQL
 	tasks := timer.BatchTasksFromTimer(executeTimes)

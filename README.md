@@ -11,7 +11,7 @@ XTimer主要分为Migrator、Scheduler、Trigger、Executor模块。整体思路
 - XTimer提供了接口去创建、激活、删除、查询定时器，后续由Migrator模块根据定时器的Cron表达式会批量生成具体的任务
 - Scheduler模块，按秒轮询，分配协程调度Trigger模块跟踪处理每个分片中任务
 - Trigger模块，按秒轮询，拉取到期的任务，分配协程调度Executor模块执行任务
-- Executor模块，执行具体任务，
+- Executor模块，执行具体任务
 
 ## Todo
 

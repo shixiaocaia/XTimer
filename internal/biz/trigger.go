@@ -134,7 +134,7 @@ func getBucket(slice string) (int, error) {
 func (w *TriggerUseCase) getTasksByTime(ctx context.Context, key string, bucket int, start, end time.Time) ([]*TimerTask, error) {
 	// 先走缓存
 	tasks, err := w.taskCache.GetTasksByTime(ctx, key, start.UnixMilli(), end.UnixMilli())
-	if err == nil {
+	if err == nil || len(tasks) == 0 {
 		return tasks, nil
 	}
 

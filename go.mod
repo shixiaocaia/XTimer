@@ -9,11 +9,10 @@ require (
 	github.com/goccy/go-json v0.10.2
 	github.com/google/uuid v1.6.0
 	github.com/google/wire v0.6.0
-	github.com/gorhill/cronexpr v0.0.0-20180427100037-88b0669f7d75
 	github.com/panjf2000/ants/v2 v2.9.1
 	github.com/pkg/errors v0.9.1
 	github.com/redis/go-redis/v9 v9.4.0
-	github.com/robfig/cron/v3 v3.0.1
+	github.com/robfig/cron/v3 v3.0.0
 	github.com/smartystreets/goconvey v1.8.1
 	go.etcd.io/etcd/api/v3 v3.5.11
 	go.etcd.io/etcd/client/v3 v3.5.11

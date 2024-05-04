@@ -3,11 +3,10 @@ package utils
 import (
 	"Xtimer/internal/constant"
 	"fmt"
+	cronexpr "github.com/robfig/cron/v3"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/gorhill/cronexpr"
 )
 
 func GetEnableLockKey(app string) string {
@@ -53,22 +52,21 @@ func GetTimeBatch(cron string, end time.Time) ([]time.Time, error) {
 		return nil, fmt.Errorf("end can not earlier than start, start: %v, end: %v", start, end)
 	}
 
-	// 解析这个时间
-	expr, err := cronexpr.Parse(cron)
+	specParser := cronexpr.NewParser(cronexpr.Second | cronexpr.Minute | cronexpr.Hour | cronexpr.Dom | cronexpr.Month | cronexpr.Dow)
+	sched, err := specParser.Parse(cron)
 	if err != nil {
 		return nil, err
 	}
 
-	// 基于一个时间步的时间
-	var nexts []time.Time
+	var next []time.Time
 	for start.Before(end) {
-		next := expr.Next(start)
-		if next.UnixNano() < 0 {
+		n := sched.Next(start)
+		if n.UnixNano() < 0 {
 			return nil, fmt.Errorf("fail to parse time from cron: %s", cron)
 		}
-		nexts = append(nexts, next)
-		start = next
+		next = append(next, n)
+		start = n
 	}
 
-	return nexts, nil
+	return next, nil
 }

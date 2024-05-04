@@ -38,6 +38,7 @@ func (w *ExecutorUseCase) Work(ctx context.Context, timerIDUnixKey string) error
 
 	// 幂等性验证
 	// todo 1. bloomFilter
+
 	// 2. mysql
 	task, err := w.taskRepo.GetTasksByTimerIdAndRunTimer(ctx, timerID, unix)
 	if err != nil {
